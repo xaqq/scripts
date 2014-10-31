@@ -10,7 +10,7 @@ Blu='\e[0;34m';
 TMP_DIR=$(mktemp -d)
 MAIL_FILE=$TMP_DIR/mail
 CLEAR_MAIL=$TMP_DIR/clearmail
-TMPFILE=$TMP_DIR/tmpfile
+CLAM_REPORT_FILE=$TMP_DIR/tmpfile
 DIR_TO_SCAN=()
 PGP_BOUNDARY=2412412pgp
 boundary=421150523mail
@@ -110,8 +110,18 @@ function add_attachment()
 Content-Type:`file --mime-type $1 | cut -d':' -f2`
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename=toto.txt
+X-Attachment-Id: `uuidgen | cut -d'-' -f1`
 " >> $CLEAR_MAIL
     base64 $1 >> $CLEAR_MAIL
+}
+
+# Add the summary of the scan (found in $CLAM_REPORT_FILE) to the body
+# of the mail
+function add_scan_summary_to_body()
+{
+    echo "Below is the scan summary:" >> $CLEAR_MAIL
+    ## see http://stackoverflow.com/questions/7103531/how-to-get-the-part-of-file-after-the-line-that-matches-grep-expression-first
+    sed -e '1,/----------- SCAN SUMMARY -----------/d' $CLAM_REPORT_FILE >> $CLEAR_MAIL
 }
 
 #Compress file
@@ -127,9 +137,8 @@ function compress()
 # Output file will be $1.enc
 function encrypt()
 {
-#    cat $1 | gpg --batch --yes --passphrase=boap --encrypt --sign \
-#	--armor --recipient AA35A79C > $1.enc
-    cat $1 | gpg -e -a -r AA35A79C > $1.enc
+    cat $1 | gpg --batch --yes --passphrase=boap --encrypt --sign \
+	--armor --recipient AA35A79C > $1.enc
 }
 
 function main()
@@ -147,8 +156,10 @@ function main()
 
     write_clear_header
     write_body
-    clamscan -vr "$@" >> $TMPFILE
-    add_attachment $TMPFILE
+    clamscan -vr "$@" > $CLAM_REPORT_FILE
+    add_scan_summary_to_body
+
+    add_attachment $CLAM_REPORT_FILE
 
     ## end mail
     printf '\n%s\n' "--${boundary}--" >> $CLEAR_MAIL
