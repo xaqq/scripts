@@ -45,15 +45,19 @@ function check_input()
     done
 
     echo -en ${RCol}
-    echo -n "Press y to continue: "
-    read user_input
-    if [ $? -ne 0 ]; then
+    if [ -z $CLAMSCAN_SH_ASSUME_YES ] || [ $CLAMSCAN_SH_ASSUME_YES != "true" ]; then
+	echo -n "Press y to continue: "
+	read user_input
+	if [ $? -ne 0 ]; then
+	    return 1;
+	fi
+	if [ $user_input = "y" ] || [ $user_input = "y" ] ; then
+	    return 0;
+	fi
 	return 1;
     fi
-    if [ $user_input = "y" ] || [ $user_input = "y" ] ; then
-	return 0;
-    fi
-    return 1;
+    echo "Skipping manual confirmation..."
+    return 0
 }
 
 function write_clear_header()
@@ -149,12 +153,21 @@ function encrypt()
 	--armor --recipient AA35A79C > $1.enc
 }
 
+function usage()
+{
+    echo "./$0 DIR1 [DIRN]"
+    echo "Environement variable to drive behaviour:"
+    echo -e "\t CLAMSCAN_SH_ASSUME_YES: If set to true, will not ask for confirmation before running"
+}
+
 function main()
 {
     if [ $# -lt 1 ]; then
-	fail "Too few arguments..."
+	echo "Failed invocation: too few arguments"
+	usage
+	fail 
     fi
-
+    
     check_input "$@"
     if [ $? -eq 1 ]; then
 	fail "Canceled by user"
