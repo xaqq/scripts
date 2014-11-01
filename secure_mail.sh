@@ -126,7 +126,7 @@ Content-Disposition: inline
 function add_attachment()
 {
     [ -r $1 ] || fail "attachment file is not readable: $1"
-    filename="{$1##*/}"
+    filename="${1##*/}"
     printf '%s\n' "--${CONTENT_BOUNDARY}
 Content-Type:`file --mime-type $1 | cut -d':' -f2`
 Content-Transfer-Encoding: base64
