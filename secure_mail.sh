@@ -257,4 +257,5 @@ compose_mail
 confirm || { echo "Canceled by user"; die 0 ; }
 send_mail
 
+echo "Looks like everything went well"
 die 0
