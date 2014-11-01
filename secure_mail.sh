@@ -79,8 +79,7 @@ to be set too"
 ## Thoses state that our mail is a encrypted pgp mail.
 function write_clear_header()
 {
-    printf '%s\n' "
-Subject: ${SUBJECT}
+    printf '%s\n' "Subject: ${SUBJECT}
 Mime-Version: 1.0
 From: ${FROM}
 To: ${RECIPIENT}
@@ -144,7 +143,7 @@ function encrypt()
     [ -r $1 ] || fail "Source file not readable: $1"
     [ -w $2 ] || fail "Dest file not writable: $2"
 
-    if [ $ASSUME_YES -eq 1 ]; then
+    if [ $ASSUME_YES -eq 1 ] || [ ! -z $SIGNING_KEY_PASSPHRASE ] ; then
 	cat $1 | gpg --batch --yes --passphrase=$SIGNING_KEY_PASSPHRASE --encrypt --sign \
 	    --armor --recipient $RECIPIENT_KEY > $2 || fail "Failed to encrypt/sign"
     else
@@ -172,7 +171,7 @@ function compose_mail()
 ## Send the mail
 function send_mail()
 {
-    echo "sending mail" ;
+    sendmail -t -oi < $MAIL_FILE
 }
 
 ## Prints what's about to be done and ask for user confirmation 
@@ -196,6 +195,11 @@ function confirm()
 	echo -e "\t\t" $attachment
     done
 
+    echo -n "Proceed? (y/N)"
+    read proceed
+    if [ ! $? -eq 0 ]; then return 1; fi
+    if [ $proceed != "y" ] && [ $proceed != "Y" ]; then return 1; fi
+    echo "Proceeding..."
     return 0
 }
 
