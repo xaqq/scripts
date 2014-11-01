@@ -34,7 +34,7 @@ function check_input()
 	if [ -z "$dir" ] ; then
 	    fail "Invalid directory"
 	fi
-	
+
 	if [ `echo $dir | cut -c1-1` = "/" ] ; then
 	    target="$dir"
 	else
@@ -96,28 +96,28 @@ function main()
     if [ $# -lt 1 ]; then
 	echo "Failed invocation: too few arguments"
 	usage
-	fail 
+	fail
     fi
 
     source config.sh
-    
+
     check_input "$@"
     if [ $? -eq 1 ]; then
 	fail "Canceled by user"
     fi
-    
+
     echo "Continuing... (tmpfile = $TMP_DIR)"
 
 
     additional_body=''
-    { time clamscan -vr "$@" >> $CLAM_REPORT_FILE ; } 2> $TIME_TAKEN_FILE    
+    { time clamscan -vr "$@" >> $CLAM_REPORT_FILE ; } 2> $TIME_TAKEN_FILE
     if [ ! $? -eq 0 ]; then
 	echo "Error"
 	additional_body="Error in scan (or viruses)"
     fi
     write_body
     [ ! -z additional_body ] && echo $additional_body >> $MESSAGE_FILE
-    
+
     add_scan_summary_to_body
 
     ( ./secure_mail.sh -r=${ADMIN_MAIL} -rk=${ADMIN_PGP_KEY} -f=${SOURCE_MAIL} \

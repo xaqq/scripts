@@ -86,15 +86,15 @@ To: ${RECIPIENT}
 Content-Type: multipart/encrypted; boundary=$PGP_BOUNDARY; protocol=application/pgp-encrypted;
 Content-Transfer-Encoding: 7bit
 Content-Description: OpenPGP encrypted message
- 
+
 This is an OpenPGP/MIME encrypted message (RFC 2440 and 3156)
 --${PGP_BOUNDARY}
 Content-Transfer-Encoding: 7bit
 Content-Type: application/pgp-encrypted
 Content-Description: PGP/MIME Versions Identification
- 
+
 Version: 1
- 
+
 --${PGP_BOUNDARY}
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
@@ -110,7 +110,7 @@ Content-Description: OpenPGP encrypted message
 function write_body()
 {
     [ -r $1 ] || fail "Body file is not readable: $1"
-    
+
     printf '%s\n' "Content-Type: multipart/mixed; boundary=${CONTENT_BOUNDARY}
 
 --${CONTENT_BOUNDARY}
@@ -159,12 +159,12 @@ function compose_mail()
     for attachment in ${ATTACHMENTS[@]}; do
 	add_attachment $attachment
     done
-    
+
     echo "--${CONTENT_BOUNDARY}--" >> $CONTENT_MAIL_FILE
-    
+
     encrypt $CONTENT_MAIL_FILE $ENCRYPTED_MAIL_FILE;
     cat $ENCRYPTED_MAIL_FILE >> $MAIL_FILE;
-    
+
     echo "--${PGP_BOUNDARY}--" >> $MAIL_FILE
 }
 
@@ -180,7 +180,7 @@ function send_mail()
     fi
 }
 
-## Prints what's about to be done and ask for user confirmation 
+## Prints what's about to be done and ask for user confirmation
 ## unless ASSUME_YES is set to 1.
 function confirm()
 {
@@ -227,11 +227,11 @@ do
 	-b=*|--body=*)
 	BODY_FILE="${i#*=}"
 	shift
-	;;	
+	;;
 	-p=*|--passphrase=*)
 	SIGNING_KEY_PASSPHRASE="${i#*=}"
 	shift
-	;;	
+	;;
 	-f=*|--from=*)
 	FROM="${i#*=}"
 	shift
