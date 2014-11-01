@@ -52,7 +52,7 @@ function check_input()
 	if [ $? -ne 0 ]; then
 	    return 1;
 	fi
-	if [ $user_input = "y" ] || [ $user_input = "y" ] ; then
+	if [ ! -z $user_input ] && { [ $user_input = "y" ] || [ $user_input = "Y" ] ; } ; then
 	    return 0;
 	fi
 	return 1;
@@ -108,13 +108,21 @@ function main()
     
     echo "Continuing... (tmpfile = $TMP_DIR)"
 
-    { time clamscan -vr "$@" > $CLAM_REPORT_FILE ; } 2> $TIME_TAKEN_FILE
-
+    
     write_body
+    
+    { time clamscan -vr "$@" >> $CLAM_REPORT_FILE ; } 2> $TIME_TAKEN_FILE
+    if [ ! $? -eq 0 ]; then
+	echo "Error"
+	echo "Error in scan (or viruses)" >> $MESSAGE_FILE
+    fi
+    
     add_scan_summary_to_body
 
-    ( ./secure_mail.sh -r=${ADMIN_MAIL} -rk=${ADMIN_PGP_KEY} -f=${SOURCE_MAIL} -b=$MESSAGE_FILE \
+    ( ./secure_mail.sh -r=${ADMIN_MAIL} -rk=${ADMIN_PGP_KEY} -f=${SOURCE_MAIL} \
+	-b=$MESSAGE_FILE -s="ClamScan Script Report" \
 	--passphrase=$SIGNING_KEY_PASSPHRASE --assume-yes -- $CLAM_REPORT_FILE ) || fail "Mail send error"
+    return 0
 }
 
 main "$@"
