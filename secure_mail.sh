@@ -17,7 +17,8 @@ MAIL_FILE=$WORK_DIR/mail
 CONTENT_MAIL_FILE=$WORK_DIR/content_mail
 
 # Encrypted content
-ENCRYPTED_MAIL_FILE=$WORK_DIR/encryped_mail
+ENCRYPTED_MAIL_FILE=$WORK_DIR/encrypted_mail
+touch $ENCRYPTED_MAIL_FILE
 
 PGP_BOUNDARY=qwerty1234_pgp
 CONTENT_BOUNDARY=qwerty1243_mail
@@ -41,6 +42,7 @@ function errcho()
 ## $1 is status code. If not set returns 1
 function die()
 {
+    echo $WORK_DIR;
     rm -rf ${WORK_DIR}
     [ ! -z $1 ] && exit $1
     exit 1
@@ -50,7 +52,7 @@ function die()
 ## $1 is the error message
 function fail()
 {
-    echo $1
+    echo "Exiting due to fatal error:" $1
     die 1
 }
 
@@ -59,13 +61,15 @@ function fail()
 function usage()
 {
     echo "Usage: ${0} -r=|--recipient= -f=|--from= -b=|--body= -rk|--recipient-key= \
-[-s=|--subject=] [=-p|--passphrase=] -- [Attachment file]*"
+[-s=|--subject=] [=-p|--passphrase=] [--assume-yes] -- [Attachment file]*"
     echo "Recipient of the mail. Only is supported."
     echo "Sender of the mail. Must be set"
     echo "Path to the file containing the plain/text body of the mail"
     echo "GPG key id of recipient"
     echo "Passphrase of our signing key"
     echo "Subject of mail. This will NOT be encrypted"
+    echo "If --assume-yes is set, will not ask for confirmation and expect passphrase\
+to be set too"
     echo "Path to attachements files"
     die $1
 }
@@ -137,18 +141,21 @@ X-Attachment-Id: f_`uuidgen | cut -d'-' -f1`
 ## Encrypt $1 and write to $2
 function encrypt()
 {
+    [ -r $1 ] || fail "Source file not readable: $1"
+    [ -w $2 ] || fail "Dest file not writable: $2"
+
     if [ $ASSUME_YES -eq 1 ]; then
 	cat $1 | gpg --batch --yes --passphrase=$SIGNING_KEY_PASSPHRASE --encrypt --sign \
-	    --armor --recipient $RECIPIENT_KEY > $2
+	    --armor --recipient $RECIPIENT_KEY > $2 || fail "Failed to encrypt/sign"
     else
-	cat $1 | gpg --encrypt --sign --armor --recipient $RECIPIENT_KEY > $2
+	cat $1 | gpg --encrypt --sign --armor --recipient $RECIPIENT_KEY > $2 || fail "Failed to encrypt/sign"
     fi
-    return 0
 }
 
 ## Build the mail and write the result to $MAIL_FILE
 function compose_mail()
 {
+    write_clear_header
     write_body $BODY_FILE
     for attachment in ${ATTACHMENTS[@]}; do
 	add_attachment $attachment
@@ -156,11 +163,16 @@ function compose_mail()
     
     echo "--${CONTENT_BOUNDARY}--" >> $CONTENT_MAIL_FILE
     
-    ( encrypt $CONTENT_MAIL_FILE $ENCRYPTED_MAIL_FILE ) | cat >> $MAIL_FILE
-    # check result of encrypt
-    [ ${PIPESTATUS[0]} -eq 0 ] || fail "Encryption failed"
-
+    encrypt $CONTENT_MAIL_FILE $ENCRYPTED_MAIL_FILE;
+    cat $ENCRYPTED_MAIL_FILE >> $MAIL_FILE;
+    
     echo "--${PGP_BOUNDARY}--" >> $MAIL_FILE
+}
+
+## Send the mail
+function send_mail()
+{
+    echo "sending mail" ;
 }
 
 ## Prints what's about to be done and ask for user confirmation 
@@ -214,6 +226,10 @@ do
 	FROM="${i#*=}"
 	shift
 	;;
+	--assume-yes)
+	ASSUME_YES=1
+	shift
+	;;
 	-h|\?|--help)
 	    usage 0;
 	    ;;
@@ -234,7 +250,7 @@ done
 [ ! -z $RECIPIENT_KEY ] || fail "Recipient key must be set";
 
 compose_mail
-    
 confirm || { echo "Canceled by user"; die 0 ; }
+send_mail
 
 die 0
