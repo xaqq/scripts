@@ -108,14 +108,15 @@ function main()
     
     echo "Continuing... (tmpfile = $TMP_DIR)"
 
-    
-    write_body
-    
-    { time clamscan -vr "$@" >> $CLAM_REPORT_FILE ; } 2> $TIME_TAKEN_FILE
+
+    additional_body=''
+    { time clamscan -vr "$@" >> $CLAM_REPORT_FILE ; } 2> $TIME_TAKEN_FILE    
     if [ ! $? -eq 0 ]; then
 	echo "Error"
-	echo "Error in scan (or viruses)" >> $MESSAGE_FILE
+	additional_body="Error in scan (or viruses)"
     fi
+    write_body
+    [ ! -z additional_body ] && echo $additional_body >> $MESSAGE_FILE
     
     add_scan_summary_to_body
 

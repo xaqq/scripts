@@ -171,7 +171,13 @@ function compose_mail()
 ## Send the mail
 function send_mail()
 {
-    sendmail -t -oi < $MAIL_FILE
+    if [ ! -z $USE_SSMTP ] && [ $USE_SSMTP = '1' ]; then
+	echo "Sending mail with SSMTP..."
+	ssmtp -t -oi < $MAIL_FILE
+    else
+	echo "Sending mail with Sendmail..."
+	sendmail -t -oi < $MAIL_FILE
+    fi
 }
 
 ## Prints what's about to be done and ask for user confirmation 
