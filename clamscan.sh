@@ -96,11 +96,20 @@ function main()
 
 
     additional_body=''
-    { time clamscan -vr "$@" >> $CLAM_REPORT_FILE ; } 2> $TIME_TAKEN_FILE
-    if [ ! $? -eq 0 ]; then
-	echo "Error"
-	additional_body="Error in scan (or viruses)"
+    ionice_cmd=''
+    if [ ${IONICE_LEVEL} = "IDLE" ]; then
+	ionice_cmd='ionice -c 3';
+    else
+	if [ ! -z ${IONICE_LEVEL} ]; then
+	    ionice_cmd='ionice -c 2 -n ${IONICE_LEVEL}'
+	fi
     fi
+
+    echo "Nice and ionice cmd:" $ionice_cmd nice -n ${NICE_LEVEL}
+    { $ionice_cmd nice -n ${NICE_LEVEL} time clamscan -vr "$@" >> $CLAM_REPORT_FILE ; } 2> $TIME_TAKEN_FILE \
+	|| { echo "Non 0 return code from Clamscan"; \
+	additional_body="Error in scan (or viruses)" ; }
+
     write_body
     [ ! -z additional_body ] && echo $additional_body >> $MESSAGE_FILE
 

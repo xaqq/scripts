@@ -33,6 +33,7 @@ FROM=''
 ATTACHMENTS=()
 
 source tools.sh
+source config.sh
 
 ## Print usage and die
 ## $1 is status code
