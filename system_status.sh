@@ -4,9 +4,12 @@
 
 set -e
 
-TMP_DIR=$(mktemp -d)
-MESSAGE_FILE=$TMP_DIR/message_file
-PROCESS_TREE_FILE=$TMP_DIR/process_tree
+WORK_DIR=$(mktemp -d)
+MESSAGE_FILE=$WORK_DIR/message_file
+PROCESS_TREE_FILE=$WORK_DIR/process_tree
+
+source tools.sh
+source config.sh
 
 function btrfs_info()
 {
@@ -34,8 +37,6 @@ function load_info()
     echo "Uptime: " $(uptime) >> $MESSAGE_FILE
 }
 
-echo -e "General system report, ran `date`.\n" >> $MESSAGE_FILE
-
 function process_tree()
 {
     echo "Current process tree (detailed process tree is available as an attachment):" >> $MESSAGE_FILE
@@ -44,12 +45,13 @@ function process_tree()
     pstree -acun > $PROCESS_TREE_FILE
 }
 
+echo -e "General system report, ran `date`.\n" >> $MESSAGE_FILE
 btrfs_info
 load_info
 process_tree
 
-source config.sh
-
 ( ./secure_mail.sh -r=${ADMIN_MAIL} -rk=${ADMIN_PGP_KEY} -f=${SOURCE_MAIL} \
     -b=$MESSAGE_FILE -s="System Status Script Report" \
     --passphrase=$SIGNING_KEY_PASSPHRASE --assume-yes -- $PROCESS_TREE_FILE) || fail "Mail send error"
+
+die 0

@@ -32,29 +32,7 @@ BODY_FILE=''
 FROM=''
 ATTACHMENTS=()
 
-## Write $@ to stderr
-function errcho()
-{
-    >&2 echo "$@"
-}
-
-## Perform cleanup and exit.
-## $1 is status code. If not set returns 1
-function die()
-{
-    echo $WORK_DIR;
-    rm -rf ${WORK_DIR}
-    [ ! -z $1 ] && exit $1
-    exit 1
-}
-
-## Print an error message and die
-## $1 is the error message
-function fail()
-{
-    echo "Exiting due to fatal error:" $1
-    die 1
-}
+source tools.sh
 
 ## Print usage and die
 ## $1 is status code

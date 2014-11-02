@@ -4,26 +4,14 @@
 
 set -e
 
-RCol='\e[0m'    # Text Reset
-Bla='\e[0;30m';
-Red='\e[0;31m';
-Gre='\e[0;32m';
-Yel='\e[0;33m';
-Blu='\e[0;34m';
-
-TMP_DIR=$(mktemp -d)
-TIME_TAKEN_FILE=$TMP_DIR/time_taken
-CLAM_REPORT_FILE=$TMP_DIR/report_file.txt
-MESSAGE_FILE=$TMP_DIR/message_file
+WORK_DIR=$(mktemp -d)
+TIME_TAKEN_FILE=$WORK_DIR/time_taken
+CLAM_REPORT_FILE=$WORK_DIR/report_file.txt
+MESSAGE_FILE=$WORK_DIR/message_file
 DIR_TO_SCAN=()
 
-# $1 is the message to print
-function fail()
-{
-    echo "$1"
-    echo -en ${RCol}
-    exit -1
-}
+source tools.sh
+source config.sh
 
 function check_input()
 {
@@ -99,14 +87,12 @@ function main()
 	fail
     fi
 
-    source config.sh
-
     check_input "$@"
     if [ $? -eq 1 ]; then
 	fail "Canceled by user"
     fi
 
-    echo "Continuing... (tmpfile = $TMP_DIR)"
+    echo "Continuing... (tmpfile = $WORK_DIR)"
 
 
     additional_body=''
@@ -127,4 +113,4 @@ function main()
 }
 
 main "$@"
-exit $?
+die $?
