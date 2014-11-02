@@ -106,7 +106,7 @@ function main()
     fi
 
     echo "Nice and ionice cmd:" $ionice_cmd nice -n ${NICE_LEVEL}
-    { $ionice_cmd nice -n ${NICE_LEVEL} time clamscan -vr "$@" >> $CLAM_REPORT_FILE ; } 2> $TIME_TAKEN_FILE \
+    {  time $ionice_cmd nice -n ${NICE_LEVEL} clamscan -vr "$@" >> $CLAM_REPORT_FILE ; } 2> $TIME_TAKEN_FILE \
 	|| { echo "Non 0 return code from Clamscan"; \
 	additional_body="Error in scan (or viruses)" ; }
 
