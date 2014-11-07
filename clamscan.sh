@@ -11,8 +11,8 @@ MESSAGE_FILE=$WORK_DIR/message_file
 DIR_TO_SCAN=()
 
 SCRIPT_DIR=`dirname "$0"`
-source $SCRIPT_DIR/tools.sh
 source $SCRIPT_DIR/config.sh
+source $SCRIPT_DIR/tools.sh
 
 function check_input()
 {

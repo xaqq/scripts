@@ -33,8 +33,8 @@ FROM=''
 ATTACHMENTS=()
 
 SCRIPT_DIR=`dirname "$0"`
-source $SCRIPT_DIR/tools.sh
 source $SCRIPT_DIR/config.sh
+source $SCRIPT_DIR/tools.sh
 
 ## Print usage and die
 ## $1 is status code

@@ -9,8 +9,8 @@ MESSAGE_FILE=$WORK_DIR/message_file
 PROCESS_TREE_FILE=$WORK_DIR/process_tree
 
 SCRIPT_DIR=`dirname "$0"`
-source $SCRIPT_DIR/tools.sh
 source $SCRIPT_DIR/config.sh
+source $SCRIPT_DIR/tools.sh
 
 function btrfs_info()
 {
