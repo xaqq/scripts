@@ -32,8 +32,9 @@ BODY_FILE=''
 FROM=''
 ATTACHMENTS=()
 
-source tools.sh
-source config.sh
+SCRIPT_DIR=`dirname "$0"`
+source $SCRIPT_DIR/tools.sh
+source $SCRIPT_DIR/config.sh
 
 ## Print usage and die
 ## $1 is status code

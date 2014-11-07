@@ -8,8 +8,9 @@ WORK_DIR=$(mktemp -d)
 MESSAGE_FILE=$WORK_DIR/message_file
 PROCESS_TREE_FILE=$WORK_DIR/process_tree
 
-source tools.sh
-source config.sh
+SCRIPT_DIR=`dirname "$0"`
+source $SCRIPT_DIR/tools.sh
+source $SCRIPT_DIR/config.sh
 
 function btrfs_info()
 {
@@ -50,7 +51,7 @@ btrfs_info
 load_info
 process_tree
 
-( ./secure_mail.sh -r=${ADMIN_MAIL} -rk=${ADMIN_PGP_KEY} -f=${SOURCE_MAIL} \
+( $SCRIPT_DIR/secure_mail.sh -r=${ADMIN_MAIL} -rk=${ADMIN_PGP_KEY} -f=${SOURCE_MAIL} \
     -b=$MESSAGE_FILE -s="System Status Script Report" \
     --passphrase=$SIGNING_KEY_PASSPHRASE --assume-yes -- $PROCESS_TREE_FILE) || fail "Mail send error"
 

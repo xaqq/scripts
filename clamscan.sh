@@ -10,8 +10,9 @@ CLAM_REPORT_FILE=$WORK_DIR/report_file.txt
 MESSAGE_FILE=$WORK_DIR/message_file
 DIR_TO_SCAN=()
 
-source tools.sh
-source config.sh
+SCRIPT_DIR=`dirname "$0"`
+source $SCRIPT_DIR/tools.sh
+source $SCRIPT_DIR/config.sh
 
 function check_input()
 {
